@@ -1,0 +1,138 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/users": {
+            "post": {
+                "description": "Create a new user item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Create a user",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/users.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/support.HttpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "get the Health status of server.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health Status"
+                ],
+                "summary": "Show the Health status of server.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "support.HttpError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "errors": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "results": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "users.Base": {
+            "type": "object",
+            "properties": {
+                "created_At": {
+                    "type": "string"
+                },
+                "delete_At": {
+                    "type": "string"
+                },
+                "updated_At": {
+                    "type": "string"
+                }
+            }
+        },
+        "users.User": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "base": {
+                    "$ref": "#/definitions/users.Base"
+                },
+                "birthday": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "hashed_password": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "usercode": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

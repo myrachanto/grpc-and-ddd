@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package pb;
+
+// import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/myrachanto/grpcgateway/pb";
+
+message  User {
+	string firstname  = 1;              
+	string lastname  = 2;              
+	string username  = 3;               
+	string birthday  = 4;                
+	string address   = 5;             
+	string phone     = 6;               
+	string email      = 7;              
+	string usercode   = 9;              
+	string role       = 10;             
+	string picture    = 11;
+    // google.protobuf.Timestamp updated_at = 12; 
+    // google.protobuf.Timestamp created_at = 13;                 
+}

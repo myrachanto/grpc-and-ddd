@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+import "rpc_create_user.proto";
+
+option go_package = "github.com/myrachanto/grpcgateway/pb";
+
+
+service UserService {
+    rpc CreateUser(CreateUserRequest)returns(CreateUserResponse){}
+    rpc LoginUser(LoginUserRequest)returns(LoginUserResponse){}
+    rpc LogoutUser(LogoutRequest)returns(LogoutResponse){}
+    rpc GetOneUser(GetOneRequest)returns(GetOneResponse){}
+    rpc GetAllUser(GetAllRequest)returns(GetAllResponse){}
+    rpc UpdateUser(UpdateRequest)returns(UpdateResponse){}
+    rpc DeleteUser(DeleteRequest)returns(DeleteResponse){}
+}

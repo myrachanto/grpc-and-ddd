@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package pb;
+
+import "user.proto";
+// import "google/protobuf/Timestamp.proto";
+
+option go_package = "github.com/myrachanto/grpcgateway/pb";
+
+message  CreateUserRequest {
+	string firstname  = 1;              
+	string lastname  = 2;              
+	string username  = 3;               
+	string birthday  = 4;                
+	string address   = 5;             
+	string phone     = 6;               
+	string email      = 7;              
+	string password   = 8;               
+	string role       = 10;             
+	string picture    = 11;                
+}
+message CreateUserResponse {
+    User user = 1;
+}
+
+message LoginUserRequest {            
+	string email      = 1;            
+	string password   = 2;  
+}
+message LoginUserResponse {
+	string usercode = 1;              
+	string userName = 2;              
+	string picture  = 3;             
+	string token    = 4;              
+	// google.protobuf.Timestamp tokenExpires = 5;         
+	string refleshToken  = 6;         
+	// google.protobuf.Timestamp refleshTokenExpires = 7;
+	string sessionCode      =8;  
+	string role        =9;        
+}
+message LogoutRequest {
+	string token = 1;
+}
+message LogoutResponse {
+	string info = 1;
+}
+message GetOneRequest {
+	string code = 1;
+}
+message GetOneResponse {
+	User user = 1;
+}
+message GetAllRequest {
+	string search = 1;
+}
+message GetAllResponse {
+	repeated User user = 1;
+}
+message UpdateRequest {
+	string firstname  = 1;              
+	string lastname  = 2;              
+	string username  = 3;               
+	string birthday  = 4;                
+	string address   = 5;             
+	string phone     = 6;               
+	string email      = 7;               
+	string role       = 8;             
+	string picture    = 9;           
+	string usercode   = 10;   
+}
+message UpdateResponse {
+	User user = 1; 
+}
+message DeleteRequest {
+	string code = 1;
+}
+message DeleteResponse {
+	string info = 1;
+}
