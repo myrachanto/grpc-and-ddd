@@ -6,6 +6,7 @@ import (
 	"github.com/myrachanto/grpcgateway/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var Usergapi UserServiceServer = &userGapiController{}
@@ -56,6 +57,8 @@ func converter(user *User) *pb.User {
 		Username:  user.Username,
 		Address:   user.Address,
 		Email:     user.Email,
+		CreatedAt: timestamppb.New(user.Created_At),
+		UpdatedAt: timestamppb.New(user.Updated_At),
 	}
 }
 
@@ -68,13 +71,15 @@ func (g *userGapiController) LoginUser(ctx context.Context, req *pb.LoginUserReq
 		return nil, status.Errorf(codes.Internal, "Error : %v", err1.Code())
 	}
 	return &pb.LoginUserResponse{
-		Usercode:     auth.Usercode,
-		UserName:     auth.UserName,
-		Token:        auth.Token,
-		RefleshToken: auth.RefleshToken,
-		Role:         auth.Role,
-		Picture:      auth.Picture,
-		SessionCode:  auth.SessionCode,
+		Usercode:            auth.Usercode,
+		UserName:            auth.UserName,
+		Token:               auth.Token,
+		RefleshToken:        auth.RefleshToken,
+		Role:                auth.Role,
+		Picture:             auth.Picture,
+		SessionCode:         auth.SessionCode,
+		TokenExpires:        timestamppb.New(auth.TokenExpires),
+		RefleshTokenExpires: timestamppb.New(auth.RefleshTokenExpires),
 	}, nil
 }
 func (g *userGapiController) LogoutUser(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {

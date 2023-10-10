@@ -1,12 +1,15 @@
 package routes
 
 import (
+	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/joho/godotenv"
 	"github.com/myrachanto/grpcgateway/pb"
 	"github.com/myrachanto/grpcgateway/src/api/users"
@@ -20,11 +23,31 @@ import (
 
 func ApiLoader() {
 	// go ginApiServer()
+	go grpcGatewayServer()
 	grpcServer()
 }
-func init() {
-	log.SetPrefix("gRPC: ")
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+func grpcGatewayServer() {
+	grpcuser := users.NewUserGapiController(users.NewUserService(users.NewUserRepo()))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	grpcmux := runtime.NewServeMux()
+	errd := pb.RegisterUserServiceHandlerServer(ctx, grpcmux, grpcuser)
+	if errd != nil {
+		log.Fatal("Error running gRPC server : ", errd)
+	}
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcmux)
+
+	// PORT := os.Getenv("HTTP_PORT")
+	listener, err := net.Listen("tcp", ":5000")
+	if err != nil {
+		log.Fatal("Error running gRPC server : ", err)
+	}
+	log.Println("gRPC Gateway server started at :", listener.Addr().String())
+	errs := http.Serve(listener, mux)
+	if errs != nil {
+		log.Fatal("Cannot start gRPC http gateway server : ", err)
+	}
 }
 func grpcServer() {
 	grpcserver := grpc.NewServer()
@@ -53,8 +76,8 @@ func ginApiServer() {
 
 	docs.SwaggerInfo.BasePath = "/"
 	router := gin.Default()
-	// router.Use(gin.Logger())
-	// router.Use(gin.Recovery())
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 	router.Use(cors.Default())
 
 	api := router.Group("/api")

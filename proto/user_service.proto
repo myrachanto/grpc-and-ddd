@@ -3,16 +3,52 @@ syntax = "proto3";
 package pb;
 
 import "rpc_create_user.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/myrachanto/grpcgateway/pb";
 
 
 service UserService {
-    rpc CreateUser(CreateUserRequest)returns(CreateUserResponse){}
-    rpc LoginUser(LoginUserRequest)returns(LoginUserResponse){}
-    rpc LogoutUser(LogoutRequest)returns(LogoutResponse){}
-    rpc GetOneUser(GetOneRequest)returns(GetOneResponse){}
-    rpc GetAllUser(GetAllRequest)returns(GetAllResponse){}
-    rpc UpdateUser(UpdateRequest)returns(UpdateResponse){}
-    rpc DeleteUser(DeleteRequest)returns(DeleteResponse){}
+    rpc CreateUser(CreateUserRequest)returns(CreateUserResponse){
+        option (google.api.http) = {
+                post: "/v1/register"
+                body: "*"
+        };
+    }
+    rpc LoginUser(LoginUserRequest)returns(LoginUserResponse){
+        option (google.api.http) = {
+            post: "/v1/login"
+            body: "*"
+    };
+    }
+    rpc LogoutUser(LogoutRequest)returns(LogoutResponse){
+        option (google.api.http) = {
+            post: "/v1/logout"
+            body: "*"
+    };
+    }
+    rpc GetOneUser(GetOneRequest)returns(GetOneResponse){
+        option (google.api.http) = {
+            post: "/v1/getone"
+            body: "*"
+    };
+    }
+    rpc GetAllUser(GetAllRequest)returns(GetAllResponse){
+        option (google.api.http) = {
+            post: "/v1/getall"
+            body: "*"
+    };
+    }
+    rpc UpdateUser(UpdateRequest)returns(UpdateResponse){
+        option (google.api.http) = {
+            post: "/v1/update"
+            body: "*"
+    };
+    }
+    rpc DeleteUser(DeleteRequest)returns(DeleteResponse){
+        option (google.api.http) = {
+            post: "/v1/delete"
+            body: "*"
+    };
+    }
 }

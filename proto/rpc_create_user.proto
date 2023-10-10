@@ -3,7 +3,7 @@ syntax = "proto3";
 package pb;
 
 import "user.proto";
-// import "google/protobuf/Timestamp.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/myrachanto/grpcgateway/pb";
 
@@ -32,9 +32,9 @@ message LoginUserResponse {
 	string userName = 2;              
 	string picture  = 3;             
 	string token    = 4;              
-	// google.protobuf.Timestamp tokenExpires = 5;         
+	google.protobuf.Timestamp tokenExpires = 5;         
 	string refleshToken  = 6;         
-	// google.protobuf.Timestamp refleshTokenExpires = 7;
+	google.protobuf.Timestamp refleshTokenExpires = 7;
 	string sessionCode      =8;  
 	string role        =9;        
 }

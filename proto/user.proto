@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pb;
 
-// import "google/protobuf/timestamp.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/myrachanto/grpcgateway/pb";
 
@@ -17,6 +17,6 @@ message  User {
 	string usercode   = 9;              
 	string role       = 10;             
 	string picture    = 11;
-    // google.protobuf.Timestamp updated_at = 12; 
-    // google.protobuf.Timestamp created_at = 13;                 
+    google.protobuf.Timestamp updated_at = 12; 
+    google.protobuf.Timestamp created_at = 13;               
 }

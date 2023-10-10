@@ -7,7 +7,8 @@ import (
 )
 
 func init() {
-	log.SetPrefix("GRPCGateway server ...... ")
+	log.SetPrefix("gRPC: ")
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 func main() {
 	log.Println("Server started")
