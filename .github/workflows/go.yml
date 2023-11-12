@@ -12,6 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: MongoDB in GitHub Actions
+      # You may pin to the exact commit or the version.
+      # uses: supercharge/mongodb-github-action@e815fd8a9dfede09fd6e6c144f2c9f4875e933df
+      uses: supercharge/mongodb-github-action@1.7.0
+      with:
+        mongodb-db: grpcgateway # optional, default is 
+        # MongoDB root username (default: none)
+#         mongodb-username: # optional, default is 
+        # MongoDB root password (default: none)
+#         mongodb-password: # optional, default is 
+
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
@@ -22,4 +33,3 @@ jobs:
 
     - name: Test
       run: go test -v ./...
- 
