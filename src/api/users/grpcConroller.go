@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/myrachanto/grpcgateway/pb"
+	middle "github.com/myrachanto/grpcgateway/src/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -94,6 +95,10 @@ func (g *userGapiController) LogoutUser(ctx context.Context, req *pb.LogoutReque
 	}, nil
 }
 func (g *userGapiController) GetOneUser(ctx context.Context, req *pb.GetOneRequest) (*pb.GetOneResponse, error) {
+	_, err := middle.GRPCAuthorization(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Error : %v", err)
+	}
 	code := req.GetCode()
 	user, problem := g.service.GetOne(code)
 	if problem != nil {

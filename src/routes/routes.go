@@ -71,28 +71,20 @@ func grpcServer() {
 	}
 }
 func ginApiServer() {
-
 	u := users.NewUserController(users.NewUserService(users.NewUserRepo()))
-
 	docs.SwaggerInfo.BasePath = "/"
 	router := gin.Default()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(cors.Default())
 
+	// normal routes
+	normalRoutes(router, u)
+
+	// locked user routes
 	api := router.Group("/api")
+	apiRoutes(api, u)
 
-	router.POST("/register", u.Create)
-	router.POST("/login", u.Login)
-
-	api.GET("/logout", u.Logout)
-	api.POST("/users/shop", u.Create)
-	api.GET("/users", u.GetAll)
-	api.GET("/users/:code", u.GetOne)
-	api.PUT("/users/password", u.PasswordUpdate)
-
-	router.GET("/health", HealthCheck)
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file in routes")
@@ -100,4 +92,18 @@ func ginApiServer() {
 
 	PORT := os.Getenv("HTTP_PORT")
 	router.Run(PORT)
+}
+
+func normalRoutes(router *gin.Engine, u users.UserControllerInterface) {
+	router.POST("/register", u.Create)
+	router.POST("/login", u.Login)
+	router.GET("/health", HealthCheck)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+}
+func apiRoutes(api *gin.RouterGroup, u users.UserControllerInterface) {
+	api.GET("/logout", u.Logout)
+	api.POST("/users/shop", u.Create)
+	api.GET("/users", u.GetAll)
+	api.GET("/users/:code", u.GetOne)
+	api.PUT("/users/password", u.PasswordUpdate)
 }

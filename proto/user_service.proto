@@ -4,9 +4,21 @@ package pb;
 
 import "rpc_create_user.proto";
 import "google/api/annotations.proto";
+// import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/myrachanto/grpcgateway/pb";
 
+// option go_package = "github.com/grpc-ecosystem/grpc-gateway/v2/examples/internal/proto/examplepb";
+// option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//   info: {
+//     title: "User Docs";
+//     version: "1.0";
+//     contact: {
+//       name: "User gRPC-Gateway project";
+//       email: "none@example.com";
+//     };
+//   };
+// };
 
 service UserService {
     rpc CreateUser(CreateUserRequest)returns(CreateUserResponse){
@@ -29,19 +41,17 @@ service UserService {
     }
     rpc GetOneUser(GetOneRequest)returns(GetOneResponse){
         option (google.api.http) = {
-            post: "/v1/getone"
-            body: "*"
+            get: "/v1/getone/{code}"
     };
     }
     rpc GetAllUser(GetAllRequest)returns(GetAllResponse){
         option (google.api.http) = {
-            post: "/v1/getall"
-            body: "*"
+            get: "/v1/getall"
     };
     }
     rpc UpdateUser(UpdateRequest)returns(UpdateResponse){
         option (google.api.http) = {
-            post: "/v1/update"
+            patch: "/v1/update/{user.code}"
             body: "*"
     };
     }

@@ -1,13 +1,12 @@
 package middle
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/myrachanto/grpcgateway/src/pasetos"
 	httperrors "github.com/myrachanto/erroring"
+	"github.com/myrachanto/grpcgateway/src/pasetos"
 )
 
 const (
@@ -16,7 +15,6 @@ const (
 )
 
 func PasetoAuthMiddleware() gin.HandlerFunc {
-	fmt.Println("Middleware hit .................")
 	return func(c *gin.Context) {
 		authorizationHeader := c.GetHeader(authorisationHeaderKey)
 		if len(authorizationHeader) == 0 {

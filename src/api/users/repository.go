@@ -50,8 +50,13 @@ func (r *userrepository) Create(user *User) (*User, httperrors.HttpErr) {
 		return nil, err1
 	}
 	var err httperrors.HttpErr
-	ok := r.emailexist(user.Email)
+	ok := user.ValidateEmail(user.Email)
+	if !ok {
+		return nil, httperrors.NewNotFoundError("Your email format is wrong!")
+	}
+	ok = r.emailexist(user.Email)
 	if ok {
+
 		return nil, httperrors.NewBadRequestError("that email exist in the our system!")
 	}
 	if err != nil {
@@ -60,10 +65,6 @@ func (r *userrepository) Create(user *User) (*User, httperrors.HttpErr) {
 	ok, err1 := user.ValidatePassword(user.Password)
 	if !ok {
 		return nil, err1
-	}
-	ok = user.ValidateEmail(user.Email)
-	if !ok {
-		return nil, httperrors.NewNotFoundError("Your email format is wrong!")
 	}
 	code, errs := r.genecode()
 	if errs != nil {
