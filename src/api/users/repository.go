@@ -29,12 +29,12 @@ type Key struct {
 }
 
 type UserrepoInterface interface {
-	Create(user *User) (*User, httperrors.HttpErr)
+	Create(user *User) (*UserDto, httperrors.HttpErr)
 	Login(user *LoginUser) (*Auth, httperrors.HttpErr)
 	Logout(token string) (string, httperrors.HttpErr)
-	GetOne(code string) (user *User, errors httperrors.HttpErr)
-	GetAll(search string) ([]*User, httperrors.HttpErr)
-	Update(code string, user *User) (*User, httperrors.HttpErr)
+	GetOne(code string) (user *UserDto, errors httperrors.HttpErr)
+	GetAll(search string) ([]*UserDto, httperrors.HttpErr)
+	Update(code string, user *User) (*UserDto, httperrors.HttpErr)
 	PasswordUpdate(oldpassword, email, newpassword string) (string, string, httperrors.HttpErr)
 	Delete(code string) (string, httperrors.HttpErr)
 }
@@ -45,7 +45,7 @@ func NewUserRepo() UserrepoInterface {
 	return &userrepository{}
 }
 
-func (r *userrepository) Create(user *User) (*User, httperrors.HttpErr) {
+func (r *userrepository) Create(user *User) (*UserDto, httperrors.HttpErr) {
 	if err1 := user.Validate(); err1 != nil {
 		return nil, err1
 	}
@@ -84,7 +84,7 @@ func (r *userrepository) Create(user *User) (*User, httperrors.HttpErr) {
 		return nil, httperrors.NewBadRequestError(fmt.Sprintf("Create user Failed, %d", errd))
 	}
 	user.ID = result1.InsertedID.(primitive.ObjectID)
-	return user, nil
+	return user.UserConvter(), nil
 
 }
 
@@ -136,7 +136,7 @@ func (r *userrepository) Logout(token string) (string, httperrors.HttpErr) {
 	}
 	return "something went wrong login out!", nil
 }
-func (r *userrepository) GetOne(code string) (user *User, errors httperrors.HttpErr) {
+func (r *userrepository) GetOne(code string) (user *UserDto, errors httperrors.HttpErr) {
 	stringresults := httperrors.ValidStringNotEmpty(code)
 	if stringresults.Noerror() {
 		return nil, stringresults
@@ -150,14 +150,10 @@ func (r *userrepository) GetOne(code string) (user *User, errors httperrors.Http
 	return user, nil
 }
 
-func (r *userrepository) GetAll(search string) ([]*User, httperrors.HttpErr) {
+func (r *userrepository) GetAll(search string) ([]*UserDto, httperrors.HttpErr) {
 	collection := db.Mongodb.Collection(collectionName)
 	results := []*User{}
-	fmt.Println(search)
 	if search != "" {
-		// 	filter := bson.D{
-		// 		{"name", primitive.Regex{Pattern: search, Options: "i"}},
-		// }
 		filter := bson.D{
 			{"$or", bson.A{
 				bson.D{{"firstname", primitive.Regex{Pattern: search, Options: "i"}}},
@@ -175,22 +171,29 @@ func (r *userrepository) GetAll(search string) ([]*User, httperrors.HttpErr) {
 		if err = cursor.All(ctx, &results); err != nil {
 			return nil, httperrors.NewNotFoundError("Error decoding!")
 		}
-		fmt.Println(results)
-		return results, nil
-	} else {
-		cursor, err := collection.Find(ctx, bson.M{})
-		if err != nil {
-			return nil, httperrors.NewNotFoundError("No records found!")
+		res := []*UserDto{}
+		for _, u := range results {
+			res = append(res, u.UserConvter())
 		}
-		if err = cursor.All(ctx, &results); err != nil {
-			return nil, httperrors.NewNotFoundError("Error decoding!")
-		}
-		return results, nil
+
+		return res, nil
 	}
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, httperrors.NewNotFoundError("No records found!")
+	}
+	if err = cursor.All(ctx, &results); err != nil {
+		return nil, httperrors.NewNotFoundError("Error decoding!")
+	}
+	res := []*UserDto{}
+	for _, u := range results {
+		res = append(res, u.UserConvter())
+	}
+	return res, nil
 
 }
 
-func (r *userrepository) Update(code string, user *User) (*User, httperrors.HttpErr) {
+func (r *userrepository) Update(code string, user *User) (*UserDto, httperrors.HttpErr) {
 	stringresults := httperrors.ValidStringNotEmpty(code)
 	if stringresults.Noerror() {
 		return nil, stringresults
@@ -232,7 +235,7 @@ func (r *userrepository) Update(code string, user *User) (*User, httperrors.Http
 	if errs != nil {
 		return nil, httperrors.NewNotFoundError("Error updating!")
 	}
-	return uuser, nil
+	return uuser.UserConvter(), nil
 }
 
 func (r *userrepository) PasswordUpdate(oldpassword, email, newpassword string) (string, string, httperrors.HttpErr) {

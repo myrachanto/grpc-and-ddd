@@ -12,7 +12,7 @@ import (
 // @Tags Health Status
 // @Accept */*
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {string} the server is healthy
 // @Router /health [get]
 func HealthCheck(g *gin.Context) {
 	g.JSON(http.StatusOK, "the server is healthy")

@@ -25,6 +25,20 @@ type User struct {
 	Picture        string             `json:"picture,omitempty"`
 	Base           `json:"base,omitempty"`
 }
+type UserDto struct {
+	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Firstname string             `json:"firstname,omitempty"`
+	Lastname  string             `json:"lastname,omitempty"`
+	Username  string             `json:"username,omitempty"`
+	Birthday  string             `json:"birthday,omitempty"`
+	Address   string             `json:"address,omitempty"`
+	Phone     string             `json:"phone,omitempty"`
+	Email     string             `json:"email,omitempty"`
+	Usercode  string             `json:"usercode,omitempty"`
+	Role      string             `json:"role,omitempty"`
+	Picture   string             `json:"picture,omitempty"`
+	Base      `json:"base,omitempty"`
+}
 type LoginUser struct {
 	Email    string `json:"email,omitempty"`
 	Password string `json:"password,omitempty"`
@@ -45,6 +59,22 @@ type Base struct {
 	Created_At time.Time  `bson:"created_at"`
 	Updated_At time.Time  `bson:"updated_at"`
 	Delete_At  *time.Time `bson:"deleted_at"`
+}
+
+func (user User) UserConvter() *UserDto {
+	return &UserDto{
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Username:  user.Username,
+		Birthday:  user.Birthday,
+		Email:     user.Email,
+		Address:   user.Address,
+		Phone:     user.Phone,
+		Usercode:  user.Usercode,
+		Role:      user.Role,
+		Picture:   user.Picture,
+		Base:      user.Base,
+	}
 }
 
 func (user User) ValidateEmail(email string) (matchedString bool) {

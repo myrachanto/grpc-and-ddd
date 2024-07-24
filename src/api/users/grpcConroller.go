@@ -50,7 +50,7 @@ func (g *userGapiController) CreateUser(ctx context.Context, req *pb.CreateUserR
 		User: converter(u),
 	}, nil
 }
-func converter(user *User) *pb.User {
+func converter(user *UserDto) *pb.User {
 	return &pb.User{
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,

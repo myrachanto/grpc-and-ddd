@@ -22,8 +22,8 @@ import (
 )
 
 func ApiLoader() {
-	// go ginApiServer()
-	go grpcGatewayServer()
+	go ginApiServer()
+	// go grpcGatewayServer()
 	grpcServer()
 }
 func grpcGatewayServer() {
@@ -95,6 +95,7 @@ func ginApiServer() {
 }
 
 func normalRoutes(router *gin.Engine, u users.UserControllerInterface) {
+
 	router.POST("/register", u.Create)
 	router.POST("/login", u.Login)
 	router.GET("/health", HealthCheck)
@@ -106,4 +107,5 @@ func apiRoutes(api *gin.RouterGroup, u users.UserControllerInterface) {
 	api.GET("/users", u.GetAll)
 	api.GET("/users/:code", u.GetOne)
 	api.PUT("/users/password", u.PasswordUpdate)
+	api.DELETE("/users/:code", u.Delete)
 }

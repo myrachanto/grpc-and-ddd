@@ -38,9 +38,16 @@ func NewUserController(ser UserServiceInterface) UserControllerInterface {
 // @Summary Create a user
 // @Description Create a new user item
 // @Tags users
-// @Accept json
+// @Accept application/x-www-form-urlencoded
 // @Produce json
-// @Success 201 {object} User
+// @Param firstname formData string true "User's First Name" example:"John"
+// @Param lastname formData string true "User's Last Name" example:"Doe"
+// @Param phone formData string true "User's Phone Number" example:"+1234567890"
+// @Param username formData string true "User's Username" example:"john_doe"
+// @Param address formData string true "User's Address" example:"123 Main St"
+// @Param email formData string true "User's Email" example:"john@example.com"
+// @Param password formData string true "User's Password" example:"securePassword123"
+// @Success 201 {object} UserDto
 // @Failure 400 {object} support.HttpError
 // @Router /register [post]
 func (controller userController) Create(c *gin.Context) {
@@ -67,7 +74,9 @@ func (controller userController) Create(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 201 {object} User
+// @Param email formData string true "User's Email" example:"john@example.com"
+// @Param password formData string true "User's Password" example:"securePassword123"
+// @Success 200 {object} Auth
 // @Failure 400 {object} support.HttpError
 // @Router /login [post]
 func (controller userController) Login(c *gin.Context) {
@@ -88,7 +97,7 @@ func (controller userController) Login(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 201 {object} User
+// @Success 200 {string} succeessifully logged out
 // @Failure 400 {object} support.HttpError
 // @Router /api/logout [post]
 func (controller userController) Logout(c *gin.Context) {
@@ -107,7 +116,8 @@ func (controller userController) Logout(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} User
+// @Param   code     path    string     true        "code"
+// @Success 200 {object} UserDto
 // @Failure 400 {object} support.HttpError
 // @Router /api/users/{code} [get]
 func (controller userController) GetOne(c *gin.Context) {
@@ -126,7 +136,7 @@ func (controller userController) GetOne(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} User
+// @Success 200 {array} UserDto
 // @Failure 400 {object} support.HttpError
 // @Router /api/users [get]
 func (controller userController) GetAll(c *gin.Context) {
@@ -145,7 +155,7 @@ func (controller userController) GetAll(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} User
+// @Success 200 {string} Updated successifuly
 // @Failure 400 {object} support.HttpError
 // @Router /api/users/{code} [put]
 func (controller userController) Update(c *gin.Context) {
@@ -172,7 +182,9 @@ func (controller userController) Update(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} User
+// @Param oldpassword formData string true "User's oldpassword" example:"securePassword123"
+// @Param newpassword formData string true "User's newpassword" example:"securePassword123"
+// @Success 200 {string} Updated successifuly
 // @Failure 400 {object} support.HttpError
 // @Router /api/users/password [put]
 func (controller userController) PasswordUpdate(c *gin.Context) {
@@ -194,11 +206,12 @@ func (controller userController) PasswordUpdate(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} User
+// @Param   code     path    string     true        "code"
+// @Success 200 {string} deleted successfully
 // @Failure 400 {object} support.HttpError
 // @Router /api/users/{code} [delete]
 func (controller userController) Delete(c *gin.Context) {
-	id := string(c.Param("id"))
+	id := c.Param("id")
 	success, failure := controller.service.Delete(id)
 	if failure != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": failure.Message()})
