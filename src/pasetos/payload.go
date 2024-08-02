@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	httperrors "github.com/myrachanto/erroring"
 )
 
 var (
@@ -38,10 +37,10 @@ type Data struct {
 	Admin     string `json:"admin"`
 }
 
-func NewPayload(data *Data, duration time.Duration) (*Payload, httperrors.HttpErr) {
+func NewPayload(data *Data, duration time.Duration) (*Payload, error) {
 	tokenid, err := uuid.NewRandom()
 	if err != nil {
-		return nil, httperrors.NewBadRequestError(fmt.Sprintf("error with uuid generation, %d", err))
+		return nil, fmt.Errorf(fmt.Sprintf("error with uuid generation, %d", err))
 	}
 	return &Payload{
 		IDs:       tokenid,
@@ -53,9 +52,9 @@ func NewPayload(data *Data, duration time.Duration) (*Payload, httperrors.HttpEr
 		ExpiredAt: time.Now().Add(duration),
 	}, nil
 }
-func (payload *Payload) Valid() httperrors.HttpErr {
+func (payload *Payload) Valid() error {
 	if time.Now().After(payload.ExpiredAt) {
-		return httperrors.NewBadRequestError(ErrExpiredToken)
+		return fmt.Errorf(ErrExpiredToken)
 	}
 	return nil
 }

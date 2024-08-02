@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	httperrors "github.com/myrachanto/erroring"
 	"github.com/myrachanto/grpcgateway/src/db"
 	"github.com/myrachanto/grpcgateway/src/pasetos"
 	"github.com/myrachanto/grpcgateway/src/support"
@@ -29,14 +28,14 @@ type Key struct {
 }
 
 type UserrepoInterface interface {
-	Create(user *User) (*UserDto, httperrors.HttpErr)
-	Login(user *LoginUser) (*Auth, httperrors.HttpErr)
-	Logout(token string) (string, httperrors.HttpErr)
-	GetOne(code string) (user *UserDto, errors httperrors.HttpErr)
-	GetAll(search string) ([]*UserDto, httperrors.HttpErr)
-	Update(code string, user *User) (*UserDto, httperrors.HttpErr)
-	PasswordUpdate(oldpassword, email, newpassword string) (string, string, httperrors.HttpErr)
-	Delete(code string) (string, httperrors.HttpErr)
+	Create(user *User) (*UserDto, error)
+	Login(user *LoginUser) (*Auth, error)
+	Logout(token string) (string, error)
+	GetOne(code string) (user *UserDto, errors error)
+	GetAll(search string) ([]*UserDto, error)
+	Update(code string, user *User) (*UserDto, error)
+	PasswordUpdate(oldpassword, email, newpassword string) (string, string, error)
+	Delete(code string) (string, error)
 }
 type userrepository struct {
 }
@@ -45,19 +44,19 @@ func NewUserRepo() UserrepoInterface {
 	return &userrepository{}
 }
 
-func (r *userrepository) Create(user *User) (*UserDto, httperrors.HttpErr) {
+func (r *userrepository) Create(user *User) (*UserDto, error) {
 	if err1 := user.Validate(); err1 != nil {
 		return nil, err1
 	}
-	var err httperrors.HttpErr
+	var err error
 	ok := user.ValidateEmail(user.Email)
 	if !ok {
-		return nil, httperrors.NewNotFoundError("Your email format is wrong!")
+		return nil, fmt.Errorf("Your email format is wrong!")
 	}
 	ok = r.emailexist(user.Email)
 	if ok {
 
-		return nil, httperrors.NewBadRequestError("that email exist in the our system!")
+		return nil, fmt.Errorf("that email exist in the our system!")
 	}
 	if err != nil {
 		return nil, err
@@ -81,14 +80,14 @@ func (r *userrepository) Create(user *User) (*UserDto, httperrors.HttpErr) {
 	collection := db.Mongodb.Collection(collectionName)
 	result1, errd := collection.InsertOne(ctx, &user)
 	if errd != nil {
-		return nil, httperrors.NewBadRequestError(fmt.Sprintf("Create user Failed, %d", errd))
+		return nil, fmt.Errorf(fmt.Sprintf("Create user Failed, %d", errd))
 	}
 	user.ID = result1.InsertedID.(primitive.ObjectID)
 	return user.UserConvter(), nil
 
 }
 
-func (r *userrepository) Login(user *LoginUser) (*Auth, httperrors.HttpErr) {
+func (r *userrepository) Login(user *LoginUser) (*Auth, error) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -97,11 +96,11 @@ func (r *userrepository) Login(user *LoginUser) (*Auth, httperrors.HttpErr) {
 	collection := db.Mongodb.Collection(collectionName)
 	errs := collection.FindOne(ctx, filter).Decode(&auser)
 	if errs != nil {
-		return nil, httperrors.NewBadRequestError(fmt.Sprintf("User with this email does exist @ - , %d", errs))
+		return nil, fmt.Errorf(fmt.Sprintf("User with this email does exist @ - , %d", errs))
 	}
 	ok := user.Compare(user.Password, auser.Password)
 	if !ok {
-		return nil, httperrors.NewNotFoundError("wrong email password combo!")
+		return nil, fmt.Errorf("wrong email password combo!")
 	}
 	maker, err := pasetos.NewPasetoMaker()
 	if err != nil {
@@ -123,34 +122,32 @@ func (r *userrepository) Login(user *LoginUser) (*Auth, httperrors.HttpErr) {
 	// locker.Unlock()
 	return auths, nil
 }
-func (r *userrepository) Logout(token string) (string, httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(token)
-	if stringresults.Noerror() {
-		return "", stringresults
+func (r *userrepository) Logout(token string) (string, error) {
+	if len(token) == 0 {
+		return "", fmt.Errorf("the token is empty")
 	}
 	collection := db.Mongodb.Collection("auth")
 	filter1 := bson.M{"token": token}
 	_, err3 := collection.DeleteOne(ctx, filter1)
 	if err3 != nil {
-		return "", httperrors.NewBadRequestError("something went wrong login out!")
+		return "", fmt.Errorf("something went wrong login out!")
 	}
 	return "something went wrong login out!", nil
 }
-func (r *userrepository) GetOne(code string) (user *UserDto, errors httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(code)
-	if stringresults.Noerror() {
-		return nil, stringresults
+func (r *userrepository) GetOne(code string) (user *UserDto, errors error) {
+	if len(code) == 0 {
+		return nil, fmt.Errorf("the code is empty")
 	}
 	collection := db.Mongodb.Collection(collectionName)
 	filter := bson.M{"usercode": code}
 	err := collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
-		return nil, httperrors.NewBadRequestError(fmt.Sprintf("Could not find resource with this id, %d", err))
+		return nil, fmt.Errorf(fmt.Sprintf("Could not find resource with this id, %d", err))
 	}
 	return user, nil
 }
 
-func (r *userrepository) GetAll(search string) ([]*UserDto, httperrors.HttpErr) {
+func (r *userrepository) GetAll(search string) ([]*UserDto, error) {
 	collection := db.Mongodb.Collection(collectionName)
 	results := []*User{}
 	if search != "" {
@@ -166,10 +163,10 @@ func (r *userrepository) GetAll(search string) ([]*UserDto, httperrors.HttpErr) 
 		cursor, err := collection.Find(ctx, filter)
 		fmt.Println(cursor)
 		if err != nil {
-			return nil, httperrors.NewNotFoundError("No records found!")
+			return nil, fmt.Errorf("No records found!")
 		}
 		if err = cursor.All(ctx, &results); err != nil {
-			return nil, httperrors.NewNotFoundError("Error decoding!")
+			return nil, fmt.Errorf("Error decoding!")
 		}
 		res := []*UserDto{}
 		for _, u := range results {
@@ -180,10 +177,10 @@ func (r *userrepository) GetAll(search string) ([]*UserDto, httperrors.HttpErr) 
 	}
 	cursor, err := collection.Find(ctx, bson.M{})
 	if err != nil {
-		return nil, httperrors.NewNotFoundError("No records found!")
+		return nil, fmt.Errorf("No records found!")
 	}
 	if err = cursor.All(ctx, &results); err != nil {
-		return nil, httperrors.NewNotFoundError("Error decoding!")
+		return nil, fmt.Errorf("Error decoding!")
 	}
 	res := []*UserDto{}
 	for _, u := range results {
@@ -193,17 +190,16 @@ func (r *userrepository) GetAll(search string) ([]*UserDto, httperrors.HttpErr) 
 
 }
 
-func (r *userrepository) Update(code string, user *User) (*UserDto, httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(code)
-	if stringresults.Noerror() {
-		return nil, stringresults
+func (r *userrepository) Update(code string, user *User) (*UserDto, error) {
+	if len(code) == 0 {
+		return nil, fmt.Errorf("the code is empty")
 	}
 	uuser := &User{}
 	collection := db.Mongodb.Collection(collectionName)
 	filter := bson.M{"code": code}
 	err := collection.FindOne(ctx, filter).Decode(&uuser)
 	if err != nil {
-		return nil, httperrors.NewBadRequestError(fmt.Sprintf("Could not find resource with this id, %d", err))
+		return nil, fmt.Errorf(fmt.Sprintf("Could not find resource with this id, %d", err))
 	}
 
 	if user.Firstname == "" {
@@ -233,34 +229,31 @@ func (r *userrepository) Update(code string, user *User) (*UserDto, httperrors.H
 	update := bson.M{"$set": user}
 	_, errs := collection.UpdateOne(ctx, filter, update)
 	if errs != nil {
-		return nil, httperrors.NewNotFoundError("Error updating!")
+		return nil, fmt.Errorf("Error updating!")
 	}
 	return uuser.UserConvter(), nil
 }
 
-func (r *userrepository) PasswordUpdate(oldpassword, email, newpassword string) (string, string, httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(oldpassword)
-	if stringresults.Noerror() {
-		return "", "", stringresults
+func (r *userrepository) PasswordUpdate(oldpassword, email, newpassword string) (string, string, error) {
+	if len(oldpassword) == 0 {
+		return "", "", fmt.Errorf("the oldpassword is empty")
 	}
-	stringresults2 := httperrors.ValidStringNotEmpty(email)
-	if stringresults2.Noerror() {
-		return "", "", stringresults2
+	if len(email) == 0 {
+		return "", "", fmt.Errorf("the email is empty")
 	}
-	stringresults3 := httperrors.ValidStringNotEmpty(newpassword)
-	if stringresults3.Noerror() {
-		return "", "", stringresults3
+	if len(newpassword) == 0 {
+		return "", "", fmt.Errorf("the newpassword is empty")
 	}
 	upay := &User{}
 	collection := db.Mongodb.Collection(collectionName)
 	filter := bson.M{"email": email}
 	err := collection.FindOne(ctx, filter).Decode(&upay)
 	if err != nil {
-		return "", "", httperrors.NewBadRequestError(fmt.Sprintf("Could not find resource with this email, %d", err))
+		return "", "", fmt.Errorf(fmt.Sprintf("Could not find resource with this email, %d", err))
 	}
 	ok := upay.Compare(oldpassword, upay.Password)
 	if !ok {
-		return "", "", httperrors.NewNotFoundError("wrong password combo!")
+		return "", "", fmt.Errorf("wrong password combo!")
 	}
 	newhashpassword, err2 := upay.HashPassword(newpassword)
 	if err2 != nil {
@@ -275,14 +268,13 @@ func (r *userrepository) PasswordUpdate(oldpassword, email, newpassword string) 
 		},
 	)
 	if errs != nil {
-		return "", "", httperrors.NewNotFoundError("Error updating!")
+		return "", "", fmt.Errorf("Error updating!")
 	}
 	return email, newpassword, nil
 }
-func (r userrepository) Delete(code string) (string, httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(code)
-	if stringresults.Noerror() {
-		return "", stringresults
+func (r userrepository) Delete(code string) (string, error) {
+	if len(code) == 0 {
+		return "", fmt.Errorf("the code is empty")
 	}
 	bl, errs := r.GetOne(code)
 	if errs != nil {
@@ -294,12 +286,12 @@ func (r userrepository) Delete(code string) (string, httperrors.HttpErr) {
 	filter := bson.M{"usercode": code}
 	ok, err := collection.DeleteOne(ctx, filter)
 	if ok == nil {
-		return "", httperrors.NewNotFoundError(fmt.Sprintf("deletion of %d failed", err))
+		return "", fmt.Errorf(fmt.Sprintf("deletion of %d failed", err))
 	}
 	return "deleted successfully", nil
 
 }
-func (r userrepository) genecode() (string, httperrors.HttpErr) {
+func (r userrepository) genecode() (string, error) {
 	timestamp := strconv.FormatInt(time.Now().UTC().Unix(), 10)
 	special := timestamp[1:5]
 	collection := db.Mongodb.Collection(collectionName)
@@ -307,32 +299,30 @@ func (r userrepository) genecode() (string, httperrors.HttpErr) {
 	count, err := collection.CountDocuments(ctx, filter)
 	co := count + 1
 	if err != nil {
-		return "", httperrors.NewNotFoundError("no results found")
+		return "", fmt.Errorf("no results found")
 	}
 	cod := "UserCode-" + strconv.FormatUint(uint64(co), 10) + "-" + special
 	code := support.Hasher(cod)
 	if code == "" {
-		return "", httperrors.NewNotFoundError("THe string is empty")
+		return "", fmt.Errorf("THe string is empty")
 	}
 	return code, nil
 }
-func (r userrepository) getuno(code string) (result *User, err httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(code)
-	if stringresults.Noerror() {
-		return nil, stringresults
+func (r userrepository) getuno(code string) (result *User, err error) {
+	if len(code) == 0 {
+		return nil, fmt.Errorf("the code is empty")
 	}
 	collection := db.Mongodb.Collection(collectionName)
 	filter := bson.M{"usercode": code}
 	err1 := collection.FindOne(ctx, filter).Decode(&result)
 	if err1 != nil {
-		return nil, httperrors.NewNotFoundError("no results found")
+		return nil, fmt.Errorf("no results found")
 	}
 	return result, nil
 }
 func (r userrepository) emailexist(email string) bool {
-	stringresults := httperrors.ValidStringNotEmpty(email)
-	if stringresults.Noerror() {
-		return stringresults.Noerror()
+	if len(email) == 0 {
+		return false
 	}
 	collection := db.Mongodb.Collection(collectionName)
 	result := &User{}

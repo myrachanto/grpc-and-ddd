@@ -62,7 +62,7 @@ func (controller userController) Create(c *gin.Context) {
 	user.Password = c.PostForm("password")
 	u, err1 := controller.service.Create(user)
 	if err1 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": err1.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": err1.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": u})
@@ -85,7 +85,7 @@ func (controller userController) Login(c *gin.Context) {
 	user.Password = c.PostForm("password")
 	auth, problem := controller.service.Login(user)
 	if problem != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": auth})
@@ -104,7 +104,7 @@ func (controller userController) Logout(c *gin.Context) {
 	token := string(c.Param("token"))
 	_, problem := controller.service.Logout(token)
 	if problem != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "succeessifully logged out"})
@@ -124,7 +124,7 @@ func (controller userController) GetOne(c *gin.Context) {
 	code := c.Param("code")
 	user, problem := controller.service.GetOne(code)
 	if problem != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": user})
@@ -143,7 +143,7 @@ func (controller userController) GetAll(c *gin.Context) {
 	search := c.Param("search")
 	users, problem := controller.service.GetAll(search)
 	if problem != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"users": users})
@@ -170,7 +170,7 @@ func (controller userController) Update(c *gin.Context) {
 	code := c.Param("code")
 	_, problem := controller.service.Update(code, user)
 	if problem != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "Updated successifuly"})
@@ -194,7 +194,7 @@ func (controller userController) PasswordUpdate(c *gin.Context) {
 	newpassword := c.PostForm("newpassword")
 	_, _, problem := controller.service.PasswordUpdate(oldpassword, email, newpassword)
 	if problem != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": problem.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "Updated successifuly"})
@@ -214,7 +214,7 @@ func (controller userController) Delete(c *gin.Context) {
 	id := c.Param("id")
 	success, failure := controller.service.Delete(id)
 	if failure != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": failure.Message()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": failure.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": success})

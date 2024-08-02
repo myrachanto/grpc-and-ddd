@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"regexp"
 	"time"
 
@@ -86,38 +87,34 @@ func (user User) ValidateEmail(email string) (matchedString bool) {
 	matchedString = re.MatchString(email)
 	return matchedString
 }
-func (user User) ValidatePassword(password string) (bool, httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(password)
-	if stringresults.Noerror() {
-		return false, stringresults
+func (user User) ValidatePassword(password string) (bool, error) {
+	if len(password) == 0 {
+		return false, fmt.Errorf("your password is empty")
 	}
 	if len(password) < 5 {
-		return false, httperrors.NewBadRequestError("your password need more characters!")
+		return false, fmt.Errorf("your password need more characters")
 	} else if len(password) > 32 {
-		return false, httperrors.NewBadRequestError("your password is way too long!")
+		return false, fmt.Errorf("your password is way too long")
 	}
 	return true, nil
 }
-func (user User) HashPassword(password string) (string, httperrors.HttpErr) {
-	stringresults := httperrors.ValidStringNotEmpty(password)
-	if stringresults.Noerror() {
-		return "", httperrors.NewBadRequestError("your password Must not be empty!")
+func (user User) HashPassword(password string) (string, error) {
+	if len(password) == 0 {
+		return "", fmt.Errorf("your password Must not be empty")
 	}
 	pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
-		return "", httperrors.NewNotFoundError("soemthing went wrong!")
+		return "", fmt.Errorf("something went wrong")
 	}
 	return string(pass), nil
 
 }
 
 func (user User) Compare(p1, p2 string) bool {
-	stringresults := httperrors.ValidStringNotEmpty(p1)
-	if stringresults.Noerror() {
+	if len(p1) == 0 {
 		return false
 	}
-	stringresults2 := httperrors.ValidStringNotEmpty(p2)
-	if stringresults2.Noerror() {
+	if len(p2) == 0 {
 		return false
 	}
 	err := bcrypt.CompareHashAndPassword([]byte(p2), []byte(p1))
@@ -135,31 +132,31 @@ func (user LoginUser) Compare(p1, p2 string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(p2), []byte(p1))
 	return err == nil
 }
-func (u User) Validate() httperrors.HttpErr {
+func (u User) Validate() error {
 	if u.Firstname == "" {
-		return httperrors.NewBadRequestError("Firstname should not be empty")
+		return fmt.Errorf("firstname should not be empty")
 	}
 	if u.Lastname == "" {
-		return httperrors.NewBadRequestError("Lastname should not be empty")
+		return fmt.Errorf("lastname should not be empty")
 	}
 	if u.Address == "" {
-		return httperrors.NewBadRequestError("Address should not be empty")
+		return fmt.Errorf("address should not be empty")
 	}
 	if u.Email == "" {
-		return httperrors.NewBadRequestError("Email should not be empty")
+		return fmt.Errorf("email should not be empty")
 	}
 	if u.Password == "" {
-		return httperrors.NewBadRequestError("Password should not be empty")
+		return fmt.Errorf("password should not be empty")
 	}
 	return nil
 }
 
-func (u LoginUser) Validate() httperrors.HttpErr {
+func (u LoginUser) Validate() error {
 	if u.Email == "" {
-		return httperrors.NewNotFoundError("Invalid Email")
+		return fmt.Errorf("invalid email")
 	}
 	if u.Password == "" {
-		return httperrors.NewNotFoundError("Invalid password")
+		return fmt.Errorf("invalid password")
 	}
 	return nil
 }

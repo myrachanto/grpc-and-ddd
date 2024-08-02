@@ -27,8 +27,7 @@ func TestValidateUserInputRequiredFields(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			err := test.user.Validate()
 			if err != nil {
-				require.EqualValues(t, test.err, err.Message())
-				require.EqualValues(t, test.code, err.Code())
+				require.EqualValues(t, test.err, err.Error())
 			}
 		})
 	}
@@ -45,12 +44,12 @@ func TestValidateLoginUserInputRequiredFields(t *testing.T) {
 	expected := ""
 	if err := user.Validate(); err != nil {
 		expected = "Invalid Email"
-		if err.Message() == expected {
-			assert.EqualValues(t, "", err.Message(), "Error validating email")
+		if err.Error() == expected {
+			assert.EqualValues(t, "", err.Error(), "Error validating email")
 		}
 		expected = "Invalid password"
-		if err.Message() == expected {
-			assert.EqualValues(t, "", err.Message(), "Error validating password")
+		if err.Error() == expected {
+			assert.EqualValues(t, "", err.Error(), "Error validating password")
 		}
 
 	}

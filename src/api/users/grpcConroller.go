@@ -44,7 +44,7 @@ func (g *userGapiController) CreateUser(ctx context.Context, req *pb.CreateUserR
 	user.Password = req.Password
 	u, err1 := g.service.Create(user)
 	if err1 != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", err1.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", err1.Error())
 	}
 	return &pb.CreateUserResponse{
 		User: converter(u),
@@ -69,7 +69,7 @@ func (g *userGapiController) LoginUser(ctx context.Context, req *pb.LoginUserReq
 	user.Password = req.GetPassword()
 	auth, err1 := g.service.Login(user)
 	if err1 != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", err1.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", err1.Error())
 	}
 	return &pb.LoginUserResponse{
 		Usercode:            auth.Usercode,
@@ -88,7 +88,7 @@ func (g *userGapiController) LogoutUser(ctx context.Context, req *pb.LogoutReque
 	token := req.GetToken()
 	_, problem := g.service.Logout(token)
 	if problem != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Error())
 	}
 	return &pb.LogoutResponse{
 		Info: "logout succesifuly",
@@ -102,7 +102,7 @@ func (g *userGapiController) GetOneUser(ctx context.Context, req *pb.GetOneReque
 	code := req.GetCode()
 	user, problem := g.service.GetOne(code)
 	if problem != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Error())
 	}
 	return &pb.GetOneResponse{
 		User: converter(user),
@@ -113,7 +113,7 @@ func (g *userGapiController) GetAllUser(ctx context.Context, req *pb.GetAllReque
 	search := req.GetSearch()
 	users, problem := g.service.GetAll(search)
 	if problem != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Error())
 	}
 	us := []*pb.User{}
 	for _, u := range users {
@@ -136,7 +136,7 @@ func (g *userGapiController) UpdateUser(ctx context.Context, req *pb.UpdateReque
 	code := user.Usercode
 	u, problem := g.service.Update(code, user)
 	if problem != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", problem.Error())
 	}
 	return &pb.UpdateResponse{
 		User: converter(u),
@@ -146,7 +146,7 @@ func (g *userGapiController) DeleteUser(ctx context.Context, req *pb.DeleteReque
 	id := req.GetCode()
 	success, failure := g.service.Delete(id)
 	if failure != nil {
-		return nil, status.Errorf(codes.Internal, "Error : %v", failure.Code())
+		return nil, status.Errorf(codes.Internal, "Error : %v", failure.Error())
 	}
 	return &pb.DeleteResponse{
 		Info: success,
