@@ -19,9 +19,9 @@ func TestValidateUserInputRequiredFields(t *testing.T) {
 		code int
 	}{
 		{name: "ok", user: u, err: ""},
-		{name: "Empty Firstname", user: User{Firstname: "", Lastname: "white", Birthday: "12/12/1994", Phone: "232453366674", Address: "whitemores street", Password: "123456sdf", Email: "email@example.com"}, err: "Firstname should not be empty", code: 400},
-		{name: "Empty Lastname", user: User{Firstname: "mark", Lastname: "", Birthday: "12/12/1994", Phone: "232453366674", Address: "whitemores street", Password: "123456sdf", Email: "email@example.com"}, err: "Lastname should not be empty", code: 400},
-		{name: "Empty Address", user: User{Firstname: "mark", Lastname: "white", Birthday: "12/12/1994", Phone: "232453366674", Address: "", Password: "123456sdf", Email: "email@example.com"}, err: "Address should not be empty", code: 400},
+		{name: "Empty Firstname", user: User{Firstname: "", Lastname: "white", Birthday: "12/12/1994", Phone: "232453366674", Address: "whitemores street", Password: "123456sdf", Email: "email@example.com"}, err: "firstname should not be empty", code: 400},
+		{name: "Empty Lastname", user: User{Firstname: "mark", Lastname: "", Birthday: "12/12/1994", Phone: "232453366674", Address: "whitemores street", Password: "123456sdf", Email: "email@example.com"}, err: "lastname should not be empty", code: 400},
+		{name: "Empty Address", user: User{Firstname: "mark", Lastname: "white", Birthday: "12/12/1994", Phone: "232453366674", Address: "", Password: "123456sdf", Email: "email@example.com"}, err: "address should not be empty", code: 400},
 	}
 	for _, test := range testcases {
 		t.Run(test.name, func(t *testing.T) {
@@ -43,11 +43,11 @@ func TestValidateLoginUserInputRequiredFields(t *testing.T) {
 	// fmt.Println("------------------", user)
 	expected := ""
 	if err := user.Validate(); err != nil {
-		expected = "Invalid Email"
+		expected = "invalid Email"
 		if err.Error() == expected {
 			assert.EqualValues(t, "", err.Error(), "Error validating email")
 		}
-		expected = "Invalid password"
+		expected = "invalid password"
 		if err.Error() == expected {
 			assert.EqualValues(t, "", err.Error(), "Error validating password")
 		}
