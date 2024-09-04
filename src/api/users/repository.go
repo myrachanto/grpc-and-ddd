@@ -15,12 +15,15 @@ import (
 )
 
 // Userrepository repository
+const (
+	collectionName = "user"
+)
+
 var (
 	Userrepository UserrepoInterface = &userrepository{}
 	ctx                              = context.TODO()
 	Userrepo                         = userrepository{}
 	locker                           = sync.Mutex{}
-	collectionName                   = "user"
 )
 
 type Key struct {
