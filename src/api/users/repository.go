@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/myrachanto/grpcgateway/src/pasetos"
@@ -23,7 +22,6 @@ var (
 	Userrepository UserrepoInterface = &userrepository{}
 	ctx                              = context.TODO()
 	Userrepo                         = userrepository{}
-	locker                           = sync.Mutex{}
 )
 
 type Key struct {
