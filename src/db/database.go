@@ -19,7 +19,7 @@ func DbConnection() (*mongo.Database, error) {
 	// }
 	// clientOptions := options.Client().ApplyURI("mongodb://host.docker.internal:27017")//locally hosted db accessed by dockerized app
 	// clientOptions := options.Client().ApplyURI("mongodb://mongodb:27017") //dockerized docker compose  db accessed by dockerized app
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
