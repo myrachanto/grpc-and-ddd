@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/myrachanto/grpcgateway/pb"
 	"github.com/myrachanto/grpcgateway/src/api/users"
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -21,13 +22,13 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func ApiLoader() {
-	go ginApiServer()
+func ApiLoader(mongodb *mongo.Database) {
+	go ginApiServer(mongodb)
 	// go grpcGatewayServer()
-	grpcServer()
+	grpcServer(mongodb)
 }
-func grpcGatewayServer() {
-	grpcuser := users.NewUserGapiController(users.NewUserService(users.NewUserRepo()))
+func grpcGatewayServer(mongodb *mongo.Database) {
+	grpcuser := users.NewUserGapiController(users.NewUserService(users.NewUserRepo(mongodb)))
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	grpcmux := runtime.NewServeMux()
@@ -49,9 +50,10 @@ func grpcGatewayServer() {
 		log.Fatal("Cannot start gRPC http gateway server : ", err)
 	}
 }
-func grpcServer() {
+func grpcServer(mongodb *mongo.Database) {
+
 	grpcserver := grpc.NewServer()
-	grpcuser := users.NewUserGapiController(users.NewUserService(users.NewUserRepo()))
+	grpcuser := users.NewUserGapiController(users.NewUserService(users.NewUserRepo(mongodb)))
 	pb.RegisterUserServiceServer(grpcserver, grpcuser)
 	reflection.Register(grpcserver)
 	err := godotenv.Load()
@@ -70,8 +72,8 @@ func grpcServer() {
 		log.Fatal("Cannot start gRPC server : ", err)
 	}
 }
-func ginApiServer() {
-	u := users.NewUserController(users.NewUserService(users.NewUserRepo()))
+func ginApiServer(mongodb *mongo.Database) {
+	u := users.NewUserController(users.NewUserService(users.NewUserRepo(mongodb)))
 	docs.SwaggerInfo.BasePath = "/"
 	router := gin.Default()
 	router.Use(gin.Logger())

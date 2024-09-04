@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	// "go.mongodb.org/mongo-driver/bson"
 
@@ -12,35 +12,25 @@ import (
 )
 
 var (
-	IndexRepo mongorepo
-	ctx       = context.TODO()
-	Mongodb   *mongo.Database
-	CustomDb  *mongo.Database
-	Status    = false
+	ctx = context.TODO()
 )
 
-type Db struct {
-	Mongohost   string `mapstructure:"Mongohost"`
-	MongodbName string `mapstructure:"MongodbName"`
-}
-type mongorepo struct {
-}
-
-func init() {
+func DbConnection() (*mongo.Database, error) {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017") //locally hosted db accessed by no dockerised app
 	// if clientOptions.AppName == nil {
-	// 	clientOptions = options.Client().ApplyURI("mongodb://host.docker.internal:27017") //locally hosted db accessed by dockerized app
+	// clientOptions := options.Client().ApplyURI("mongodb://host.docker.internal:27017") //locally hosted db accessed by dockerized app
 	// }
 	// clientOptions := options.Client().ApplyURI("mongodb://host.docker.internal:27017")//locally hosted db accessed by dockerized app
-	// clientOptions := options.Client().ApplyURI("mongodb://mongo-database:27017") //dockerized docker compose  db accessed by dockerized app
+	// clientOptions := options.Client().ApplyURI("mongodb://mongodb:27017") //dockerized docker compose  db accessed by dockerized app
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to connect to the database")
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to ping the database")
 	}
-	Mongodb = client.Database("grpcgateway")
+	Mongodb := client.Database("grpcgateway")
+	return Mongodb, nil
 }

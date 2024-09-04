@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/myrachanto/grpcgateway/src/db"
 	"github.com/myrachanto/grpcgateway/src/pasetos"
 	"github.com/myrachanto/grpcgateway/src/support"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Userrepository repository
@@ -38,10 +38,13 @@ type UserrepoInterface interface {
 	Delete(code string) (string, error)
 }
 type userrepository struct {
+	db *mongo.Database
 }
 
-func NewUserRepo() UserrepoInterface {
-	return &userrepository{}
+func NewUserRepo(db *mongo.Database) UserrepoInterface {
+	return &userrepository{
+		db: db,
+	}
 }
 
 func (r *userrepository) Create(user *User) (*UserDto, error) {
@@ -77,7 +80,7 @@ func (r *userrepository) Create(user *User) (*UserDto, error) {
 	user.Usercode = code
 	user.Base.Updated_At = time.Now()
 	user.Base.Created_At = time.Now()
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	result1, errd := collection.InsertOne(ctx, &user)
 	if errd != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("Create user Failed, %d", errd))
@@ -93,7 +96,7 @@ func (r *userrepository) Login(user *LoginUser) (*Auth, error) {
 	}
 	var auser User
 	filter := bson.M{"email": user.Email}
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	errs := collection.FindOne(ctx, filter).Decode(&auser)
 	if errs != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("User with this email does exist @ - , %d", errs))
@@ -126,7 +129,7 @@ func (r *userrepository) Logout(token string) (string, error) {
 	if len(token) == 0 {
 		return "", fmt.Errorf("the token is empty")
 	}
-	collection := db.Mongodb.Collection("auth")
+	collection := r.db.Collection("auth")
 	filter1 := bson.M{"token": token}
 	_, err3 := collection.DeleteOne(ctx, filter1)
 	if err3 != nil {
@@ -138,7 +141,7 @@ func (r *userrepository) GetOne(code string) (user *UserDto, errors error) {
 	if len(code) == 0 {
 		return nil, fmt.Errorf("the code is empty")
 	}
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	filter := bson.M{"usercode": code}
 	err := collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
@@ -148,7 +151,7 @@ func (r *userrepository) GetOne(code string) (user *UserDto, errors error) {
 }
 
 func (r *userrepository) GetAll(search string) ([]*UserDto, error) {
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	results := []*User{}
 	if search != "" {
 		filter := bson.D{
@@ -195,7 +198,7 @@ func (r *userrepository) Update(code string, user *User) (*UserDto, error) {
 		return nil, fmt.Errorf("the code is empty")
 	}
 	uuser := &User{}
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	filter := bson.M{"code": code}
 	err := collection.FindOne(ctx, filter).Decode(&uuser)
 	if err != nil {
@@ -245,7 +248,7 @@ func (r *userrepository) PasswordUpdate(oldpassword, email, newpassword string) 
 		return "", "", fmt.Errorf("the newpassword is empty")
 	}
 	upay := &User{}
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	filter := bson.M{"email": email}
 	err := collection.FindOne(ctx, filter).Decode(&upay)
 	if err != nil {
@@ -281,7 +284,7 @@ func (r userrepository) Delete(code string) (string, error) {
 		return "", errs
 	}
 	go support.Cleaner(bl.Picture)
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 
 	filter := bson.M{"usercode": code}
 	ok, err := collection.DeleteOne(ctx, filter)
@@ -294,7 +297,7 @@ func (r userrepository) Delete(code string) (string, error) {
 func (r userrepository) genecode() (string, error) {
 	timestamp := strconv.FormatInt(time.Now().UTC().Unix(), 10)
 	special := timestamp[1:5]
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	filter := bson.M{}
 	count, err := collection.CountDocuments(ctx, filter)
 	co := count + 1
@@ -312,7 +315,7 @@ func (r userrepository) getuno(code string) (result *User, err error) {
 	if len(code) == 0 {
 		return nil, fmt.Errorf("the code is empty")
 	}
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	filter := bson.M{"usercode": code}
 	err1 := collection.FindOne(ctx, filter).Decode(&result)
 	if err1 != nil {
@@ -324,7 +327,7 @@ func (r userrepository) emailexist(email string) bool {
 	if len(email) == 0 {
 		return false
 	}
-	collection := db.Mongodb.Collection(collectionName)
+	collection := r.db.Collection(collectionName)
 	result := &User{}
 	filter := bson.M{"email": email}
 	err1 := collection.FindOne(ctx, filter).Decode(&result)

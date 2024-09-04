@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/myrachanto/grpcgateway/src/db"
 	"github.com/myrachanto/grpcgateway/src/routes"
 )
 
@@ -24,5 +25,9 @@ func init() {
 
 func main() {
 	log.Println("Server started")
-	routes.ApiLoader()
+	mongodb, err := db.DbConnection()
+	if err != nil {
+		log.Fatal(err)
+	}
+	routes.ApiLoader(mongodb)
 }
