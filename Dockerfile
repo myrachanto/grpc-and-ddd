@@ -13,7 +13,7 @@ RUN go build -o grpcgateway main.go
 FROM alpine 
 WORKDIR /app
 COPY --from=builder /app/grpcgateway .
-COPY app.env .
+# COPY app.env .
 COPY .env .
 
 EXPOSE 2200
