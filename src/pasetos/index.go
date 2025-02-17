@@ -40,8 +40,8 @@ func (maker *PasetoMaker) CreateToken(data *Data, duration time.Duration) (strin
 		return "", nil, err
 	}
 	str, errs := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
-	if err != nil {
-		return "", nil, fmt.Errorf(fmt.Sprintf("something went Paseto Encryption, %d", errs))
+	if errs != nil {
+		return "", nil, fmt.Errorf("something went paseto encryption, %s", errs)
 	}
 	return str, payload, nil
 }

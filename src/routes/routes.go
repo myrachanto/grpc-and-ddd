@@ -105,7 +105,7 @@ func normalRoutes(router *gin.Engine, u users.UserControllerInterface) {
 }
 func apiRoutes(api *gin.RouterGroup, u users.UserControllerInterface) {
 	api.GET("/logout", u.Logout)
-	api.POST("/users/shop", u.Create)
+	api.POST("/users", u.Create)
 	api.GET("/users", u.GetAll)
 	api.GET("/users/:code", u.GetOne)
 	api.PUT("/users/password", u.PasswordUpdate)

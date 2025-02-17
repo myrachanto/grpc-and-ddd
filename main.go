@@ -1,15 +1,20 @@
 package main
 
 import (
-	"log"
+	"os"
 
 	"github.com/myrachanto/grpcgateway/src/db"
 	"github.com/myrachanto/grpcgateway/src/routes"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
-	log.SetPrefix("gRPC: ")
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+	// Set log level (e.g., Debug, Info, Warn, Error)
+	log.SetLevel(log.InfoLevel)
 }
 
 // @title GRPC Gateway API Documention

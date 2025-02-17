@@ -7,13 +7,15 @@ import (
 )
 
 // HealthCheck godoc
-// @Summary Show the Health status of server.
-// @Description get the Health status of server.
+// @Summary Show the health status of the server.
+// @Description Get the health status of the server.
 // @Tags Health Status
 // @Accept */*
 // @Produce json
-// @Success 200 {string} the server is healthy
+// @Success 200 {string} message "the server is healthy"
 // @Router /health [get]
-func HealthCheck(g *gin.Context) {
-	g.JSON(http.StatusOK, "the server is healthy")
+func HealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "the server is healthy",
+	})
 }
